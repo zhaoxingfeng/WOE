@@ -1,0 +1,36 @@
+var_name,split_left,split_right,sub_sample_cnt,sub_sample_bad_cnt,sub_sample_good_cnt,woe,iv,iv_sum
+2-Hour serum insulin (mu U/ml),-inf,14.2200,375,139,236,0.0943,0.0044,0.3789
+2-Hour serum insulin (mu U/ml),14.2200,123.7400,193,28,165,-1.1501,0.2594,0.3789
+2-Hour serum insulin (mu U/ml),123.7400,inf,200,101,99,0.6436,0.1151,0.3789
+Age,-inf,23.0000,135,16,119,-1.3829,0.2466,0.5305
+Age,23.0000,29.0000,232,55,177,-0.5452,0.0811,0.5305
+Age,29.0000,41.0000,207,95,112,0.4590,0.0599,0.5305
+Age,41.0000,inf,194,102,92,0.7268,0.1429,0.5305
+Body mass index (weight in kg/(height in m)^2),-inf,26.4000,167,14,153,-1.7678,0.4486,0.6388
+Body mass index (weight in kg/(height in m)^2),26.4000,29.9000,124,33,91,-0.3907,0.0230,0.6388
+Body mass index (weight in kg/(height in m)^2),29.9000,33.1000,138,64,74,0.4784,0.0434,0.6388
+Body mass index (weight in kg/(height in m)^2),33.1000,37.8000,184,77,107,0.2946,0.0216,0.6388
+Body mass index (weight in kg/(height in m)^2),37.8000,inf,155,80,75,0.6882,0.1022,0.6388
+Diabetes pedigree function,-inf,0.2072,143,30,113,-0.7026,0.0801,0.1873
+Diabetes pedigree function,0.2072,0.2800,127,47,80,0.0917,0.0014,0.1873
+Diabetes pedigree function,0.2800,0.5008,221,65,156,-0.2518,0.0175,0.1873
+Diabetes pedigree function,0.5008,0.6600,104,41,63,0.1941,0.0052,0.1873
+Diabetes pedigree function,0.6600,inf,173,85,88,0.5889,0.0831,0.1873
+Diastolic blood pressure (mm Hg),-inf,55.0000,86,29,57,-0.0521,0.0003,0.1271
+Diastolic blood pressure (mm Hg),55.0000,70.0000,232,57,175,-0.4981,0.0684,0.1271
+Diastolic blood pressure (mm Hg),70.0000,74.0000,101,39,62,0.1600,0.0034,0.1271
+Diastolic blood pressure (mm Hg),74.0000,82.0000,184,66,118,0.0426,0.0004,0.1271
+Diastolic blood pressure (mm Hg),82.0000,inf,165,77,88,0.4901,0.0546,0.1271
+Number of times pregnant,-inf,1.0000,111,38,73,-0.0293,0.0001,0.3315
+Number of times pregnant,1.0000,3.0000,238,48,190,-0.7522,0.1511,0.3315
+Number of times pregnant,3.0000,7.0000,250,87,163,-0.0042,0.0000,0.3315
+Number of times pregnant,7.0000,inf,169,95,74,0.8734,0.1803,0.3315
+Plasma glucose concentration a 2 hours in an oral glucose tolerance test,-inf,100.0000,197,16,181,-1.8023,0.5448,1.2078
+Plasma glucose concentration a 2 hours in an oral glucose tolerance test,100.0000,109.0000,105,23,82,-0.6476,0.0506,1.2078
+Plasma glucose concentration a 2 hours in an oral glucose tolerance test,109.0000,128.0000,183,55,128,-0.2211,0.0112,1.2078
+Plasma glucose concentration a 2 hours in an oral glucose tolerance test,128.0000,145.0000,114,52,62,0.4477,0.0314,1.2078
+Plasma glucose concentration a 2 hours in an oral glucose tolerance test,145.0000,inf,169,122,47,1.5775,0.5698,1.2078
+Triceps skin fold thickness (mm),-inf,8.0000,229,89,140,0.1706,0.0089,0.2828
+Triceps skin fold thickness (mm),8.0000,22.0000,132,18,114,-1.2222,0.1966,0.2828
+Triceps skin fold thickness (mm),22.0000,32.0000,188,59,129,-0.1587,0.0060,0.2828
+Triceps skin fold thickness (mm),32.0000,inf,219,102,117,0.4864,0.0713,0.2828
