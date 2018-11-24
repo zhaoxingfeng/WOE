@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 """
-@Time: 2018/8/21 11:34
+@Time: 2018/11/24 17:34
 @Author: zhaoxingfeng
 @Function：Weight of Evidence,根据iv值最大思想求最优分箱
 @Version: V1.1
@@ -68,7 +68,7 @@ class WoeFeatureProcess(object):
         """
         :param path_conf: The config describe the features which you want to transfrom and features's dtype.
             config structure:
-                is_continuous: identify whether the feature is discrete(0) or continuous(1).
+                is_continuous: identify whether the feature is continuous(1) or discrete(0).
                 is_identify: whether you want to transoform this feature.
                 var_dtype: dtype, float, string.
                 var_name: feature name.
@@ -76,7 +76,7 @@ class WoeFeatureProcess(object):
         :param min_sample_rate: The percentile of minimum samples required to be at a bin.
         """
         self.dataset = None
-        self.conf = pd.read_csv(path_conf, sep='\t')
+        self.conf = pd.read_csv(path_conf)
         self.continuous_var_list = self.conf[(self.conf['is_continuous'] == 1) & (self.conf['is_identify'] != 1)]['var_name']
         self.woe_rule_dict = dict()
         self.woe_rule_df = pd.DataFrame()
@@ -103,6 +103,7 @@ class WoeFeatureProcess(object):
         for var, grp in self.woe_rule_df.groupby(['var_name']):
             self.woe_rule_dict[var] = list(zip(grp.split_right, grp.woe))
 
+    #
     def fit_continuous(self, dataset, split_var):
         print(split_var.center(80, '='))
         var_tree = self._fit_continuous(dataset, split_var)
@@ -158,6 +159,7 @@ class WoeFeatureProcess(object):
             tree.tree_right = self._fit_continuous(best_dataset_right, split_var)
             return tree
 
+    # calculate the iv and woe value with given dataset
     def calculate_iv_woe(self, dataset):
         sub_bad_cnt = dataset[dataset['label'] == 1].__len__()
         sub_bad_rate = (sub_bad_cnt + 0.0001) * 1.0 / (self.total_bad_cnt + 0.0001)
@@ -180,11 +182,11 @@ class WoeFeatureProcess(object):
         best_dataset_left = None
         best_dataset_right = None
         for split_value in split_value_list:
-            dataset_left = dataset[dataset[split_var] < split_value]
-            dataset_right = dataset[dataset[split_var] >= split_value]
-            if dataset_right.__len__() < 2 * self.min_sample:
+            dataset_left = dataset[dataset[split_var] <= split_value]
+            dataset_right = dataset[dataset[split_var] > split_value]
+            if dataset_right.__len__() < self.min_sample:
                 break
-            elif dataset_left.__len__() < self.min_sample or dataset_right.__len__() < self.min_sample:
+            elif dataset_left.__len__() < self.min_sample:
                 continue
             else:
                 woe_left, iv_left = self.calculate_iv_woe(dataset_left)
@@ -210,7 +212,7 @@ class WoeFeatureProcess(object):
         plt.legend()
         plt.show()
 
-    # transform raw dataset by woe rule
+    # replace the feature value with given woe rule
     def transform(self, dataset):
         dataset_copy = copy.deepcopy(dataset)
         for var in dataset_copy.columns:
@@ -227,9 +229,10 @@ class WoeFeatureProcess(object):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("source/pima indians.csv")
-    woe = WoeFeatureProcess(path_conf="f_conf/pima indians.conf", path_woe="result/woe_rule.csv", min_sample_rate=0.1)
+    df = pd.read_csv("source/credit_card.csv")
+    woe = WoeFeatureProcess(path_conf="f_conf/credit_card.conf", path_woe="result/woe_rule.csv", min_sample_rate=0.1)
     woe.fit(df)
     woe.plot_woe_structure()
+    print(woe.woe_rule_df)
     df_woed = woe.transform(df)
     print(df_woed.head())
