@@ -72,7 +72,7 @@ class Tree(object):
 
 
 class WoeFeatureProcess(object):
-    def __init__(self, path_conf, path_woe_rule, min_sample_rate=0.1):
+    def __init__(self, path_conf, path_woe_rule, min_sample_rate=0.1, min_iv=0.0005):
         """
         :param path_conf: 描述每个特征的情况
             is_continous: 1为连续型变量，0为离散型变量
@@ -81,6 +81,7 @@ class WoeFeatureProcess(object):
             var_name: 特征名
         :param path_woe_rule: 存储csv格式特征分箱
         :param min_sample_rate: 每个分箱最小样本比例(*总体样本)
+        :param min_iv: 每个分箱最小iv，如果小于给定值则该箱被合并
         """
         self.dataset = None
         self.conf = pd.read_csv(path_conf)
@@ -90,9 +91,10 @@ class WoeFeatureProcess(object):
         self.woe_rule_df = pd.DataFrame()
         self.path_woe_rule = path_woe_rule
         self.min_sample_rate = min_sample_rate
-        self.total_bad_cnt = 0
-        self.total_good_cnt = 0
-        self.min_sample = 0
+        self.total_bad_cnt = 1
+        self.total_good_cnt = 1
+        self.min_sample = 1
+        self.min_iv = min_iv
 
     def fit(self, dataset):
         self.dataset = dataset
@@ -281,7 +283,7 @@ class WoeFeatureProcess(object):
                 woe_left, iv_left = self.calculate_woe_iv(dataset_left)
                 woe_right, iv_right = self.calculate_woe_iv(dataset_right)
 
-                if iv_left + iv_right > best_split_iv:
+                if iv_left + iv_right > best_split_iv and iv_left >= self.min_iv and iv_right >= self.min_iv:
                     best_split_value = split_value
                     best_split_iv = iv_left + iv_right
                     best_dataset_left = dataset_left
@@ -329,10 +331,10 @@ class WoeFeatureProcess(object):
 
 if __name__ == '__main__':
     df = pd.read_csv("source/credit_card.csv")
-    df_conf = pd.read_csv("f_conf/credit_card.conf")
     woe = WoeFeatureProcess(path_conf="f_conf/credit_card.conf",
                             path_woe_rule="result/woe_rule.csv",
-                            min_sample_rate=0.1)
+                            min_sample_rate=0.1,
+                            min_iv=0.0005)
     woe.fit(df)
     print(woe.woe_rule_df)
     woe.plot_woe_structure()
