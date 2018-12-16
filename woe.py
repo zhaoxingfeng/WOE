@@ -75,8 +75,7 @@ class WoeFeatureProcess(object):
     def __init__(self, path_conf, path_woe_rule, min_sample_rate=0.1, min_iv=0.0005):
         """
         :param path_conf: 描述每个特征的情况
-            is_continous: 1为连续型变量，0为离散型变量
-            is_identify: 置为1表示该特征不参与woe转化
+            is_continous: 1为连续型变量，0为离散型变量，-1表示不参与分箱
             var_dtype: 特征数据类型
             var_name: 特征名
         :param path_woe_rule: 存储csv格式特征分箱
@@ -85,8 +84,8 @@ class WoeFeatureProcess(object):
         """
         self.dataset = None
         self.conf = pd.read_csv(path_conf)
-        self.continous_var_list = self.conf[(self.conf['is_continous'] == 1) & (self.conf['is_identify'] == 0)]['var_name']
-        self.discrete_var_list = self.conf[(self.conf['is_continous'] == 0) & (self.conf['is_identify'] == 0)]['var_name']
+        self.continous_var_list = self.conf[self.conf['is_continous'] == 1]['var_name']
+        self.discrete_var_list = self.conf[self.conf['is_continous'] == 0]['var_name']
         self.woe_rule_dict = dict()
         self.woe_rule_df = pd.DataFrame()
         self.path_woe_rule = path_woe_rule
@@ -97,6 +96,8 @@ class WoeFeatureProcess(object):
         self.min_iv = min_iv
 
     def fit(self, dataset):
+        if 'label' not in dataset.columns:
+            raise ValueError("The dataset must contains label(0&1)!")
         self.dataset = dataset
         self.total_bad_cnt = dataset[dataset['label'] == 1].__len__()
         self.total_good_cnt = dataset[dataset['label'] == 0].__len__()
@@ -106,6 +107,7 @@ class WoeFeatureProcess(object):
         for var in self.continous_var_list:
             if var in self.dataset.columns:
                 print(var.center(80, '='))
+                self.dataset[var] = self.dataset[var].astype(self.conf.loc[self.conf['var_name'] == var, 'var_dtype'].values[0])
                 var_df = self.fit_continous(self.dataset[[var, 'label']], var)
                 self.woe_rule_df = var_df if self.woe_rule_df.empty else pd.concat([self.woe_rule_df, var_df], ignore_index=1)
 
@@ -113,14 +115,15 @@ class WoeFeatureProcess(object):
         for var in self.discrete_var_list:
             if var in self.dataset.columns:
                 print(var.center(80, '='))
+                self.dataset[var] = self.dataset[var].astype(self.conf.loc[self.conf['var_name'] == var, 'var_dtype'].values[0])
                 var_df = self.fit_discrete(self.dataset[[var, 'label']], var)
                 self.woe_rule_df = var_df if self.woe_rule_df.empty else pd.concat([self.woe_rule_df, var_df], ignore_index=1)
 
         cols = ['var_name', 'bin_value_list', 'split_left', 'split_right', 'sub_sample_cnt', 'sub_sample_bad_cnt',
                 'sub_sample_good_cnt', 'woe', 'iv', 'iv_sum']
-        self.woe_rule_df = self.woe_rule_df.sort_values(by=['var_name', 'split_left']).reset_index(drop=True)
-        self.woe_rule_df = self.woe_rule_df[cols]
-        self.woe_rule_df = self.woe_rule_df.sort_values(by=['iv_sum', 'var_name'], ascending=False).reset_index(drop=True)
+        self.woe_rule_df = self.woe_rule_df.sort_values(by=['var_name', 'split_left'], ascending=True)
+        self.woe_rule_df = self.woe_rule_df.sort_values(by=['iv_sum', 'var_name'], ascending=False)
+        self.woe_rule_df = self.woe_rule_df[cols].reset_index(drop=True)
         self.woe_rule_df.to_csv(self.path_woe_rule, index=None, float_format="%.4f")
 
         for var, grp in self.woe_rule_df.groupby(['var_name']):
@@ -194,7 +197,7 @@ class WoeFeatureProcess(object):
         temp = sorted(value_woe_dict.iteritems(), key=lambda x: x[1])
         bin_woe_list, bin_value_list = [x[1] for x in temp], [x[0] for x in temp]
         var_tree = self._fit_discrete(dataset, var, bin_value_list, bin_woe_list)
-        # print(var_tree.describe_tree())
+        print(var_tree.describe_tree())
         woe_iv_list, split_value_list = var_tree.format_tree(var_tree, [], [])
 
         var_df = pd.DataFrame({"var_name": var,
