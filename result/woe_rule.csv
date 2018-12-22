@@ -1,4 +1,4 @@
-var_name,bin_value_list,split_left,split_right,sub_sample_cnt,sub_sample_bad_cnt,sub_sample_good_cnt,woe,iv,iv_sum
+var_name,bin_value_list,split_left,split_right,sub_sample_cnt,sub_sample_bad_cnt,sub_sample_good_cnt,woe,iv_list,iv_sum
 PAY_0,,-inf,-1.0,8445,1319,7126,-0.4282,0.0455,0.8694
 PAY_0,,-1.0,0.0,14737,1888,12849,-0.6591,0.1749,0.8694
 PAY_0,,0.0,1.0,3688,1252,2436,0.5931,0.0501,0.8694

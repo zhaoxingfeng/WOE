@@ -2,8 +2,8 @@
 """
 @Time: 2018/8/21 11:34
 @Author: zhaoxingfeng
-@Function：Weight of Evidence,根据iv值最大思想求最优分箱
-@Version: V1.2
+@Function：Weight of Evidence,基于iv值最大思想求最优分箱
+@Version: V1.3
 参考文献：
 [1] kingsam_. 数据挖掘模型中的IV和WOE详解[DB/OL].https://blog.csdn.net/kevin7658/article/details/50780391/.
 [2] boredbird. woe[DB/OL].https://github.com/boredbird/woe.
@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import copy
+from sklearn.externals import joblib
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.width', 1000)
 pd.set_option('display.max_columns', 1000)
@@ -120,7 +121,7 @@ class WoeFeatureProcess(object):
                 self.woe_rule_df = var_df if self.woe_rule_df.empty else pd.concat([self.woe_rule_df, var_df], ignore_index=1)
 
         cols = ['var_name', 'bin_value_list', 'split_left', 'split_right', 'sub_sample_cnt', 'sub_sample_bad_cnt',
-                'sub_sample_good_cnt', 'woe', 'iv', 'iv_sum']
+                'sub_sample_good_cnt', 'woe', 'iv_list', 'iv_sum']
         self.woe_rule_df = self.woe_rule_df.sort_values(by=['var_name', 'split_left'], ascending=True)
         self.woe_rule_df = self.woe_rule_df.sort_values(by=['iv_sum', 'var_name'], ascending=False)
         self.woe_rule_df = self.woe_rule_df[cols].reset_index(drop=True)
@@ -131,6 +132,7 @@ class WoeFeatureProcess(object):
                 self.woe_rule_dict[var] = list(zip(grp.bin_value_list, grp.woe))
             else:
                 self.woe_rule_dict[var] = list(zip(grp.split_right, grp.woe))
+        del self.dataset
 
     # 处理连续型变量
     def fit_continous(self, dataset, var):
@@ -146,9 +148,9 @@ class WoeFeatureProcess(object):
                                "sub_sample_bad_cnt": [x['sub_sample_bad_cnt'] for x in woe_iv_list],
                                "sub_sample_good_cnt": [x['sub_sample_good_cnt'] for x in woe_iv_list],
                                "woe": [x['woe'] for x in woe_iv_list],
-                               "iv": [x['iv'] for x in woe_iv_list]
+                               "iv_list": [x['iv'] for x in woe_iv_list]
                                })
-        var_df['iv_sum'] = var_df['iv'].sum()
+        var_df['iv_sum'] = var_df['iv_list'].sum()
         return var_df
 
     # 处理连续型变量
@@ -208,9 +210,9 @@ class WoeFeatureProcess(object):
                                "sub_sample_bad_cnt": [x['sub_sample_bad_cnt'] for x in woe_iv_list],
                                "sub_sample_good_cnt": [x['sub_sample_good_cnt'] for x in woe_iv_list],
                                "woe": [x['woe'] for x in woe_iv_list],
-                               "iv": [x['iv'] for x in woe_iv_list]
+                               "iv_list": [x['iv'] for x in woe_iv_list]
                                })
-        var_df['iv_sum'] = var_df['iv'].sum()
+        var_df['iv_sum'] = var_df['iv_list'].sum()
         return var_df
 
     # 处理离散型变量
@@ -320,7 +322,7 @@ class WoeFeatureProcess(object):
     @staticmethod
     def _transform_continous(sub_woe_rule, value):
         for rule in sub_woe_rule:
-            if rule[0] > value:
+            if rule[0] >= value:
                 return rule[1]
         return -99
 
@@ -339,6 +341,8 @@ if __name__ == '__main__':
                             min_sample_rate=0.1,
                             min_iv=0.0005)
     woe.fit(df)
+    joblib.dump(woe, "result/woe_rule.pkl")
+    woe = joblib.load("result/woe_rule.pkl")
     print(woe.woe_rule_df)
     woe.plot_woe_structure()
     df_woed = woe.transform(df)
